@@ -48,3 +48,13 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    ports:
+      - 44083:3000
+    environment:
+      - GF_INSTALL_PLUGINS=hamedkarbasi93-kafka-datasource
+    volumes:
+      - ./config/grafana:/var/lib/grafana

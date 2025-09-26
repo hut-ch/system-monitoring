@@ -1,5 +1,10 @@
 #project sepecific
 /logs
+/config/grafana/csv
+/config/grafana/pdf
+/config/grafana/png
+/config/grafana/plugins
+*/test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

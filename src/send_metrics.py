@@ -7,7 +7,7 @@ import time
 from kafka import KafkaProducer
 from kafka.errors import KafkaError, KafkaTimeoutError, NoBrokersAvailable
 
-from configure_metrics import cpu_metrics, disk_metrics, memory_metrics, network_metrics
+from configure_metrics import MetricsCollector
 from logs import get_logger
 
 # Initialise logger
@@ -74,16 +74,17 @@ def main(interval=5):
     """Gathers and sends metrics at set intervals"""
 
     producer = init_producer()
+    metric_collector = MetricsCollector()
 
     try:
         while True:
             # Gather Metrics mapping Kafka topics to the
             # corresponding get_metric function
             metric_collectors = {
-                "cpu_stats": cpu_metrics,
-                "memory_stats": memory_metrics,
-                "disk_stats": disk_metrics,
-                "network_stats": network_metrics,
+                "cpu_stats": metric_collector.cpu_metrics,
+                "memory_stats": metric_collector.memory_metrics,
+                "disk_stats": metric_collector.disk_metrics,
+                "network_stats": lambda: metric_collector.network_metrics(interval),
                 # Future metrics can be added here
             }
 
@@ -96,7 +97,9 @@ def main(interval=5):
                     logger.error("Failed to collect or send %s: %s", topic, e)
 
             # Wait for next interval
-            logger.info("Metrics sent to Kafka")
+            if time.strftime("%S") == "00":
+                logger.info("Metrics still sending to Kafka")
+
             time.sleep(interval)
 
     except KeyboardInterrupt:
@@ -105,4 +108,4 @@ def main(interval=5):
 
 
 if __name__ == "__main__":
-    main()
+    main(interval=2)
